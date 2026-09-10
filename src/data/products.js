@@ -12,6 +12,21 @@ export const products = [
 ];
 
 export function getWhatsAppLink(product, quantity) {
-  const message = `Hola TAMTECH, me interesa el ${product.name}. Cantidad: ${quantity}. Precio unitario: Bs. ${product.price}.`;
+  const productUrl = `${window.location.origin}/producto/${product.id}`;
+  const imageUrl = `${window.location.origin}${product.image}`;
+  const total = product.price * quantity;
+  const message = [
+    "Hola TAMTECH, quiero hacer un pedido:",
+    "",
+    `Producto: ${product.name}`,
+    `Categoría: ${product.category}`,
+    `Cantidad: ${quantity}`,
+    `Precio unitario: Bs. ${product.price}`,
+    `Total estimado: Bs. ${total}`,
+    "",
+    `Ver producto: ${productUrl}`,
+    `Imagen: ${imageUrl}`,
+  ].join("\n");
+
   return `https://wa.me/59163197049?text=${encodeURIComponent(message)}`;
 }
