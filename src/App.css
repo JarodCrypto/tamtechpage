@@ -1011,6 +1011,42 @@ footer p {
   font-size: 9px;
 }
 
+.admin-insights {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.admin-insight-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px 20px 18px;
+  border-radius: 22px;
+  background: rgba(17, 17, 17, 0.96);
+  color: white;
+  box-shadow: 0 18px 40px rgba(17, 17, 17, 0.12);
+}
+
+.admin-insight-card__label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.admin-insight-card__value {
+  font-size: clamp(20px, 2vw, 28px);
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+}
+
+.admin-insight-card__meta {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+}
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1295,9 +1331,14 @@ footer p {
     align-items: flex-start;
   }
 
+  .admin-insights,
   .stats-grid,
   .admin-grid {
     grid-template-columns: 1fr;
+  }
+
+  .admin-insight-card {
+    padding: 18px 18px 16px;
   }
 
   .hero {
@@ -1342,6 +1383,10 @@ footer p {
     width: 100%;
     justify-content: space-between;
     overflow-x: auto;
+  }
+
+  .admin-insights {
+    gap: 12px;
   }
 
   .filter-chip {

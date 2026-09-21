@@ -162,6 +162,32 @@ function AdminDashboard({ user, isAdmin = false, currentUserId = null }) {
     return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
   };
 
+  const overviewCards = isAdmin
+    ? [
+        {
+          label: "Top cliente",
+          value: metrics.topCustomers[0]?.name || "Sin datos",
+          meta: metrics.topCustomers[0]
+            ? `${metrics.topCustomers[0].count} compras`
+            : "Sin compras",
+        },
+        {
+          label: "Top producto",
+          value: metrics.topProducts[0]?.name || "Sin datos",
+          meta: metrics.topProducts[0]
+            ? `${metrics.topProducts[0].count} pedidos`
+            : "Sin pedidos",
+        },
+        {
+          label: "Más favoritos",
+          value: metrics.mostSavedUsers[0]?.name || "Sin datos",
+          meta: metrics.mostSavedUsers[0]
+            ? `${metrics.mostSavedUsers[0].count} favoritos`
+            : "Sin favoritos",
+        },
+      ]
+    : [];
+
   const renderCustomerPanel = () => (
     <div className="panel-card panel-card--wide">
       <div className="panel-card__header">
@@ -368,6 +394,18 @@ function AdminDashboard({ user, isAdmin = false, currentUserId = null }) {
             </div>
           )}
         </header>
+
+        {isAdmin && overviewCards.length > 0 && (
+          <section className="admin-insights" aria-label="Resumen de ventas y clientes">
+            {overviewCards.map((card) => (
+              <article key={card.label} className="admin-insight-card">
+                <span className="admin-insight-card__label">{card.label}</span>
+                <strong className="admin-insight-card__value">{card.value}</strong>
+                <small className="admin-insight-card__meta">{card.meta}</small>
+              </article>
+            ))}
+          </section>
+        )}
 
         <section className="stats-grid">
           <article className="stat-card stat-card--users">
