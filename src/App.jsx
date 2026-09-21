@@ -71,11 +71,14 @@ function App() {
           return;
         }
 
-        setAuthReady(true);
         await syncUserProfile(firebaseUser);
       } catch (error) {
         console.error("Error al sincronizar perfil del usuario:", error);
         setUserProfile(null);
+      } finally {
+        if (mounted) {
+          setAuthReady(true);
+        }
       }
     });
 
@@ -128,9 +131,10 @@ function App() {
   };
 
   const isAdmin = Boolean(
-    userProfile &&
-      (userProfile.role === "admin" ||
-        ADMIN_EMAILS.includes((userProfile.email || "").toLowerCase()))
+    (user?.email && ADMIN_EMAILS.includes(user.email.toLowerCase())) ||
+      (userProfile &&
+        (userProfile.role === "admin" ||
+          ADMIN_EMAILS.includes((userProfile.email || "").toLowerCase())))
   );
 
   const getInitials = (name = "") => {
