@@ -1,4 +1,5 @@
 import "../App.css";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { products } from "../data/products";
 
@@ -13,6 +14,10 @@ const productGroups = products.reduce((groups, product) => {
 }, {});
 
 function Home({ user, onLogin = () => {}, onLogout = () => {}, isAdmin = false }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const closeMenu = () => setMenuOpen(false);
+
   return (
     <div className="app">
       <header className="navbar">
@@ -21,22 +26,35 @@ function Home({ user, onLogin = () => {}, onLogout = () => {}, isAdmin = false }
           <span>TAMTECH</span>
         </div>
 
-        <nav className="main-nav">
-          <a href="/">Inicio</a>
-          <a href="#catalogo">Productos</a>
+        <button
+          type="button"
+          className="mobile-menu-toggle"
+          aria-expanded={menuOpen}
+          aria-controls="main-nav"
+          aria-label="Abrir menú de navegación"
+          onClick={() => setMenuOpen((current) => !current)}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+
+        <nav id="main-nav" className={`main-nav ${menuOpen ? "open" : ""}`}>
+          <a href="/" onClick={closeMenu}>Inicio</a>
+          <a href="#catalogo" onClick={closeMenu}>Productos</a>
           {!user ? (
-            <button type="button" className="nav-login-button" onClick={onLogin}>
+            <button type="button" className="nav-login-button" onClick={() => { onLogin(); closeMenu(); }}>
               Iniciar sesión
             </button>
           ) : (
             <>
               {isAdmin && (
-                <Link to="/admin" className="nav-admin-link">
+                <Link to="/admin" className="nav-admin-link" onClick={closeMenu}>
                   Admin
                 </Link>
               )}
               {!isAdmin && (
-                <Link to="/mi-cuenta" className="nav-admin-link">
+                <Link to="/mi-cuenta" className="nav-admin-link" onClick={closeMenu}>
                   Mi cuenta
                 </Link>
               )}
@@ -75,7 +93,7 @@ function Home({ user, onLogin = () => {}, onLogout = () => {}, isAdmin = false }
           </div>
 
           <Link to={`/producto/${featuredProduct.id}`} className="hero-image">
-            <img src={featuredProduct.image} alt={featuredProduct.name} />
+            <img src={featuredProduct.image} alt={featuredProduct.name} loading="eager" />
             <div>
               <span>PRODUCTO DESTACADO</span>
               <strong>{featuredProduct.name}</strong>
@@ -199,7 +217,7 @@ function Product({ id, image, name, category, price }) {
   return (
     <article className="product">
       <div className="product-image">
-        <img src={image} alt={name} />
+        <img src={image} alt={name} loading="lazy" decoding="async" />
         <small>En stock</small>
       </div>
 
