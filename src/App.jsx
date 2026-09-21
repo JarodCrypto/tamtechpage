@@ -23,7 +23,7 @@ const ADMIN_EMAILS = ["jarodvines18@gmail.com"];
 function App() {
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [authReady, setAuthReady] = useState(false);
 
   const syncUserProfile = async (firebaseUser) => {
     if (!firebaseUser) {
@@ -57,19 +57,34 @@ function App() {
   };
 
   useEffect(() => {
+    let mounted = true;
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (!mounted) return;
+
       try {
         setUser(firebaseUser);
+
+        if (!firebaseUser) {
+          setUserProfile(null);
+          return;
+        }
+
         await syncUserProfile(firebaseUser);
       } catch (error) {
         console.error("Error al sincronizar perfil del usuario:", error);
         setUserProfile(null);
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setAuthReady(true);
+        }
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      mounted = false;
+      unsubscribe();
+    };
   }, []);
 
   const handleLogin = async () => {
@@ -99,11 +114,12 @@ function App() {
       };
 
       await setDoc(userRef, profile, { merge: true });
+      setUser(firebaseUser);
       setUserProfile(profile);
-      setLoading(false);
+      setAuthReady(true);
     } catch (error) {
       console.error("Error al iniciar sesión:", error);
-      setLoading(false);
+      setAuthReady(true);
     }
   };
 
@@ -134,7 +150,7 @@ function App() {
     return "user-avatar user-avatar--male";
   };
 
-  if (loading) {
+  if (!authReady) {
     return <div className="auth-loading">Cargando aplicación...</div>;
   }
 
