@@ -127,6 +127,8 @@ function App() {
     setUserProfile(null);
   };
 
+  const currentUser = userProfile || user;
+
   const isAdmin = Boolean(
     (user?.email && ADMIN_EMAILS.includes(user.email.toLowerCase())) ||
       (userProfile &&
@@ -201,7 +203,7 @@ function App() {
             path="/"
             element={
               <Home
-                user={userProfile}
+                user={currentUser}
                 onLogin={handleLogin}
                 onLogout={handleLogout}
                 isAdmin={isAdmin}
@@ -212,8 +214,8 @@ function App() {
           <Route
             path="/mi-cuenta"
             element={
-              user ? (
-                <AdminDashboard user={userProfile || user} isAdmin={false} currentUserId={user?.uid} />
+              currentUser ? (
+                <AdminDashboard user={currentUser} isAdmin={false} currentUserId={currentUser?.uid} />
               ) : (
                 <Navigate to="/" replace />
               )
@@ -223,7 +225,7 @@ function App() {
             path="/admin"
             element={
               isAdmin ? (
-                <AdminDashboard user={userProfile || user} isAdmin={true} />
+                <AdminDashboard user={currentUser} isAdmin={true} />
               ) : (
                 <Navigate to="/" replace />
               )
