@@ -1,6 +1,8 @@
 import "../App.css";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { collection, deleteDoc, doc, onSnapshot, query, setDoc, where } from "firebase/firestore";
+import { db } from "../firebase";
 import { products } from "../data/products";
 
 const featuredProduct = products.find((product) => product.featured) ?? products[0];
@@ -15,11 +17,55 @@ const productGroups = products.reduce((groups, product) => {
 
 function Home({ user, onLogin = () => {}, onLogout = () => {}, isAdmin = false }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [favoriteProductIds, setFavoriteProductIds] = useState([]);
   const location = useLocation();
 
   useEffect(() => {
     setMenuOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (!user?.uid) {
+      setFavoriteProductIds([]);
+      return undefined;
+    }
+
+    const favoritesRef = collection(db, "favorites");
+    const q = query(favoritesRef, where("userId", "==", user.uid));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const favoriteIds = snapshot.docs
+        .map((item) => item.data().productId)
+        .filter(Boolean);
+      setFavoriteProductIds(favoriteIds);
+    });
+
+    return () => unsubscribe();
+  }, [user?.uid]);
+
+  const toggleFavorite = async (product) => {
+    if (!user?.uid) {
+      onLogin();
+      return;
+    }
+
+    const favoriteId = `${user.uid}_${product.id}`;
+    const favoriteRef = doc(db, "favorites", favoriteId);
+
+    if (favoriteProductIds.includes(product.id)) {
+      await deleteDoc(favoriteRef);
+      return;
+    }
+
+    await setDoc(favoriteRef, {
+      userId: user.uid,
+      productId: product.id,
+      productName: product.name,
+      category: product.category,
+      price: product.price,
+      image: product.image,
+      createdAt: new Date().toISOString(),
+    });
+  };
 
   const closeMenu = () => setMenuOpen(false);
 
@@ -122,7 +168,12 @@ function Home({ user, onLogin = () => {}, onLogout = () => {}, isAdmin = false }
                 </div>
                 <div className="products">
                   {categoryProducts.map((product) => (
-                    <Product key={product.image} {...product} />
+                    <Product
+                      key={product.id}
+                      {...product}
+                      isFavorite={favoriteProductIds.includes(product.id)}
+                      onToggleFavorite={toggleFavorite}
+                    />
                   ))}
                 </div>
               </section>
@@ -220,11 +271,24 @@ function Home({ user, onLogin = () => {}, onLogout = () => {}, isAdmin = false }
   );
 }
 
-function Product({ id, image, name, category, price }) {
+function Product({ id, image, name, category, price, isFavorite = false, onToggleFavorite = () => {} }) {
+  const handleFavoriteClick = (event) => {
+    event.preventDefault();
+    onToggleFavorite({ id, image, name, category, price });
+  };
+
   return (
     <article className="product">
       <div className="product-image">
         <img src={image} alt={name} loading="lazy" decoding="async" />
+        <button
+          type="button"
+          className={`favorite-toggle ${isFavorite ? "active" : ""}`}
+          aria-label={isFavorite ? `Quitar ${name} de favoritos` : `Agregar ${name} a favoritos`}
+          onClick={handleFavoriteClick}
+        >
+          ♥
+        </button>
         <small>En stock</small>
       </div>
 
