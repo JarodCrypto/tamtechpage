@@ -25,70 +25,86 @@ function App() {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const syncUserProfile = async (firebaseUser) => {
+    if (!firebaseUser) {
+      setUserProfile(null);
+      return null;
+    }
+
+    const userRef = doc(db, "users", firebaseUser.uid);
+    const userSnap = await getDoc(userRef);
+
+    if (!userSnap.exists()) {
+      const profile = {
+        uid: firebaseUser.uid,
+        name: firebaseUser.displayName || "Usuario",
+        email: firebaseUser.email || "",
+        photo: firebaseUser.photoURL || "",
+        role: ADMIN_EMAILS.includes((firebaseUser.email || "").toLowerCase())
+          ? "admin"
+          : "customer",
+        createdAt: new Date().toISOString(),
+      };
+
+      await setDoc(userRef, profile);
+      setUserProfile(profile);
+      return profile;
+    }
+
+    const profile = userSnap.data();
+    setUserProfile(profile);
+    return profile;
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setUser(firebaseUser);
-
-      if (!firebaseUser) {
+      try {
+        setUser(firebaseUser);
+        await syncUserProfile(firebaseUser);
+      } catch (error) {
+        console.error("Error al sincronizar perfil del usuario:", error);
         setUserProfile(null);
+      } finally {
         setLoading(false);
-        return;
       }
-
-      const userRef = doc(db, "users", firebaseUser.uid);
-      const userSnap = await getDoc(userRef);
-
-      if (!userSnap.exists()) {
-        const profile = {
-          uid: firebaseUser.uid,
-          name: firebaseUser.displayName || "Usuario",
-          email: firebaseUser.email || "",
-          photo: firebaseUser.photoURL || "",
-          role: ADMIN_EMAILS.includes((firebaseUser.email || "").toLowerCase())
-            ? "admin"
-            : "customer",
-          createdAt: new Date().toISOString(),
-        };
-
-        await setDoc(userRef, profile);
-        setUserProfile(profile);
-      } else {
-        setUserProfile(userSnap.data());
-      }
-
-      setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
   const handleLogin = async () => {
-    const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({
-      prompt: "select_account",
-    });
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({
+        prompt: "select_account",
+      });
 
-    const result = await signInWithPopup(auth, provider);
-    const firebaseUser = result.user;
-    const userRef = doc(db, "users", firebaseUser.uid);
-    const userSnap = await getDoc(userRef);
+      const result = await signInWithPopup(auth, provider);
+      const firebaseUser = result.user;
+      const userRef = doc(db, "users", firebaseUser.uid);
+      const userSnap = await getDoc(userRef);
 
-    const profile = {
-      uid: firebaseUser.uid,
-      name: firebaseUser.displayName || "Usuario",
-      email: firebaseUser.email || "",
-      photo: firebaseUser.photoURL || "",
-      role: ADMIN_EMAILS.includes((firebaseUser.email || "").toLowerCase())
-        ? "admin"
-        : "customer",
-      createdAt:
-        userSnap.exists() && userSnap.data().createdAt
-          ? userSnap.data().createdAt
-          : new Date().toISOString(),
-    };
+      const profile = {
+        uid: firebaseUser.uid,
+        name: firebaseUser.displayName || "Usuario",
+        email: firebaseUser.email || "",
+        photo: firebaseUser.photoURL || "",
+        role: ADMIN_EMAILS.includes((firebaseUser.email || "").toLowerCase())
+          ? "admin"
+          : "customer",
+        createdAt:
+          userSnap.exists() && userSnap.data().createdAt
+            ? userSnap.data().createdAt
+            : new Date().toISOString(),
+      };
 
-    await setDoc(userRef, profile, { merge: true });
-    setUserProfile(profile);
+      await setDoc(userRef, profile, { merge: true });
+      setUserProfile(profile);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error al iniciar sesión:", error);
+      setLoading(false);
+    }
   };
 
   const handleLogout = async () => {
