@@ -8,20 +8,6 @@ function AdminDashboard({ user, isAdmin = false, currentUserId = null }) {
   const [orders, setOrders] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState("overview");
-
-  const filterOptions = isAdmin
-    ? [
-        { id: "overview", label: "Resumen" },
-        { id: "customers", label: "Clientes" },
-        { id: "products", label: "Productos" },
-        { id: "favorites", label: "Favoritos" },
-      ]
-    : [
-        { id: "overview", label: "Resumen" },
-        { id: "favorites", label: "Favoritos" },
-        { id: "orders", label: "Pedidos" },
-      ];
 
   useEffect(() => {
     const usersRef = collection(db, "users");
@@ -368,18 +354,6 @@ function AdminDashboard({ user, isAdmin = false, currentUserId = null }) {
             </Link>
             <div className="admin-breadcrumb">{isAdmin ? "Admin / Dashboard" : "Mi cuenta / Perfil"}</div>
           </div>
-          <div className="admin-filter-group" aria-label="Filtros del dashboard">
-            {filterOptions.map((filter) => (
-              <button
-                key={filter.id}
-                type="button"
-                className={`filter-chip ${activeFilter === filter.id ? "active" : ""}`}
-                onClick={() => setActiveFilter(filter.id)}
-              >
-                {filter.label}
-              </button>
-            ))}
-          </div>
         </div>
 
         <header className="admin-header">
@@ -427,27 +401,14 @@ function AdminDashboard({ user, isAdmin = false, currentUserId = null }) {
 
         {isAdmin ? (
           <section className="admin-grid">
-            {activeFilter === "overview" && (
-              <>
-                {renderCustomerPanel()}
-                {renderProductsPanel()}
-                {renderFavoritesPanel()}
-              </>
-            )}
-            {activeFilter === "customers" && renderCustomerPanel()}
-            {activeFilter === "products" && renderProductsPanel()}
-            {activeFilter === "favorites" && renderFavoritesPanel()}
+            {renderCustomerPanel()}
+            {renderProductsPanel()}
+            {renderFavoritesPanel()}
           </section>
         ) : (
           <section className="admin-grid user-account-grid">
-            {activeFilter === "overview" && (
-              <>
-                {renderUserFavorites()}
-                {renderUserOrders()}
-              </>
-            )}
-            {activeFilter === "favorites" && renderUserFavorites()}
-            {activeFilter === "orders" && renderUserOrders()}
+            {renderUserFavorites()}
+            {renderUserOrders()}
           </section>
         )}
       </div>

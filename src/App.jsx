@@ -71,14 +71,11 @@ function App() {
           return;
         }
 
-        await syncUserProfile(firebaseUser);
+        setAuthReady(true);
+        void syncUserProfile(firebaseUser);
       } catch (error) {
         console.error("Error al sincronizar perfil del usuario:", error);
         setUserProfile(null);
-      } finally {
-        if (mounted) {
-          setAuthReady(true);
-        }
       }
     });
 
@@ -215,8 +212,8 @@ function App() {
           <Route
             path="/mi-cuenta"
             element={
-              userProfile ? (
-                <AdminDashboard user={userProfile} isAdmin={false} currentUserId={user?.uid} />
+              user ? (
+                <AdminDashboard user={userProfile || user} isAdmin={false} currentUserId={user?.uid} />
               ) : (
                 <Navigate to="/" replace />
               )
@@ -226,7 +223,7 @@ function App() {
             path="/admin"
             element={
               isAdmin ? (
-                <AdminDashboard user={userProfile} isAdmin={true} />
+                <AdminDashboard user={userProfile || user} isAdmin={true} />
               ) : (
                 <Navigate to="/" replace />
               )
