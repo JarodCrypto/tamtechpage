@@ -162,6 +162,165 @@ function AdminDashboard({ user, isAdmin = false, currentUserId = null }) {
     return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
   };
 
+  const renderCustomerPanel = () => (
+    <div className="panel-card panel-card--wide">
+      <div className="panel-card__header">
+        <h2>Usuarios con más compras</h2>
+        <span>{metrics.topCustomers.length} clientes</span>
+      </div>
+      <ul className="metric-list">
+        {metrics.topCustomers.length === 0 ? (
+          <li className="empty-row">No hay compras todavía.</li>
+        ) : (
+          metrics.topCustomers.map((item, index) => (
+            <li key={item.uid} className="metric-row">
+              <div className="metric-rank">0{index + 1}</div>
+              <div className="metric-profile">
+                <span className="mini-avatar">{getInitials(item.name || item.email || "U")}</span>
+                <div>
+                  <strong>{item.name || "Cliente"}</strong>
+                  <small>{item.email || "Sin email"}</small>
+                </div>
+              </div>
+              <div className="metric-bar-wrap">
+                <div
+                  className="metric-bar metric-bar--customers"
+                  style={{ width: `${(item.count / metrics.maxCustomerCount) * 100}%` }}
+                />
+              </div>
+              <strong className="metric-number">{item.count}</strong>
+            </li>
+          ))
+        )}
+      </ul>
+    </div>
+  );
+
+  const renderProductsPanel = () => (
+    <div className="panel-card">
+      <div className="panel-card__header">
+        <h2>Productos más pedidos</h2>
+        <span>{metrics.topProducts.length} productos</span>
+      </div>
+      <ul className="metric-list compact-list">
+        {metrics.topProducts.length === 0 ? (
+          <li className="empty-row">No hay productos con pedidos.</li>
+        ) : (
+          metrics.topProducts.map((item, index) => (
+            <li key={item.name} className="metric-row metric-row--compact">
+              <div className="metric-rank">0{index + 1}</div>
+              <div className="metric-name-block">
+                <strong>{item.name}</strong>
+              </div>
+              <div className="metric-bar-wrap">
+                <div
+                  className="metric-bar metric-bar--products"
+                  style={{ width: `${(item.count / metrics.maxProductCount) * 100}%` }}
+                />
+              </div>
+              <strong className="metric-number">{item.count}</strong>
+            </li>
+          ))
+        )}
+      </ul>
+    </div>
+  );
+
+  const renderFavoritesPanel = () => (
+    <div className="panel-card">
+      <div className="panel-card__header">
+        <h2>Usuarios con más favoritos</h2>
+        <span>{metrics.mostSavedUsers.length} clientes</span>
+      </div>
+      <ul className="metric-list compact-list">
+        {metrics.mostSavedUsers.length === 0 ? (
+          <li className="empty-row">No hay favoritos guardados.</li>
+        ) : (
+          metrics.mostSavedUsers.map((item, index) => (
+            <li key={item.uid} className="metric-row metric-row--compact">
+              <div className="metric-rank">0{index + 1}</div>
+              <div className="metric-name-block">
+                <strong>{item.name || "Cliente"}</strong>
+              </div>
+              <div className="metric-bar-wrap">
+                <div
+                  className="metric-bar metric-bar--favorites"
+                  style={{ width: `${(item.count / metrics.maxFavoriteCount) * 100}%` }}
+                />
+              </div>
+              <strong className="metric-number">{item.count}</strong>
+            </li>
+          ))
+        )}
+      </ul>
+    </div>
+  );
+
+  const renderUserFavorites = () => (
+    <div className="panel-card panel-card--wide">
+      <div className="panel-card__header">
+        <h2>Mis favoritos</h2>
+        <span>{metrics.totalFavorites} productos</span>
+      </div>
+      <ul className="metric-list">
+        {visibleFavorites.length === 0 ? (
+          <li className="empty-row">Todavía no tienes productos favoritos.</li>
+        ) : (
+          visibleFavorites.map((favorite, index) => (
+            <li key={favorite.id || `${favorite.userId}-${index}`} className="metric-row">
+              <div className="metric-rank">0{index + 1}</div>
+              <div className="metric-profile">
+                <span className="mini-avatar mini-avatar--favorite">♥</span>
+                <div>
+                  <strong>{favorite.productName || favorite.name || "Producto favorito"}</strong>
+                  <small>{favorite.category || "Categoría"}</small>
+                </div>
+              </div>
+              <div className="metric-bar-wrap">
+                <div className="metric-bar metric-bar--favorites" style={{ width: "100%" }} />
+              </div>
+              <strong className="metric-number">Fav</strong>
+            </li>
+          ))
+        )}
+      </ul>
+    </div>
+  );
+
+  const renderUserOrders = () => (
+    <div className="panel-card panel-card--wide">
+      <div className="panel-card__header">
+        <h2>Mis pedidos</h2>
+        <span>{metrics.totalOrders} pedidos</span>
+      </div>
+      <ul className="metric-list">
+        {visibleOrders.length === 0 ? (
+          <li className="empty-row">Aún no has realizado pedidos.</li>
+        ) : (
+          visibleOrders.map((order, index) => (
+            <li key={order.id || `${order.userId}-${index}`} className="metric-row">
+              <div className="metric-rank">0{index + 1}</div>
+              <div className="metric-profile">
+                <span className="mini-avatar mini-avatar--orders">✓</span>
+                <div>
+                  <strong>{order.productName || order.productId || "Pedido"}</strong>
+                  <small>{order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "Sin fecha"}</small>
+                </div>
+              </div>
+              <div className="metric-bar-wrap">
+                <div
+                  className="metric-bar metric-bar--orders-user"
+                  style={{ width: `${Math.min(100, 35 + index * 12)}%` }}
+                />
+              </div>
+              <strong className="metric-number">{order.amount || "Bs."}</strong>
+            </li>
+          ))
+        )}
+      </ul>
+    </div>
+  );
+
   if (loading) {
     return (
       <div className="admin-page">
@@ -230,156 +389,27 @@ function AdminDashboard({ user, isAdmin = false, currentUserId = null }) {
 
         {isAdmin ? (
           <section className="admin-grid">
-            <div className="panel-card panel-card--wide">
-              <div className="panel-card__header">
-                <h2>Usuarios con más compras</h2>
-                <span>{metrics.topCustomers.length} clientes</span>
-              </div>
-              <ul className="metric-list">
-                {metrics.topCustomers.length === 0 ? (
-                  <li className="empty-row">No hay compras todavía.</li>
-                ) : (
-                  metrics.topCustomers.map((item, index) => (
-                    <li key={item.uid} className="metric-row">
-                      <div className="metric-rank">0{index + 1}</div>
-                      <div className="metric-profile">
-                        <span className="mini-avatar">{getInitials(item.name || item.email || "U")}</span>
-                        <div>
-                          <strong>{item.name || "Cliente"}</strong>
-                          <small>{item.email || "Sin email"}</small>
-                        </div>
-                      </div>
-                      <div className="metric-bar-wrap">
-                        <div
-                          className="metric-bar metric-bar--customers"
-                          style={{ width: `${(item.count / metrics.maxCustomerCount) * 100}%` }}
-                        />
-                      </div>
-                      <strong className="metric-number">{item.count}</strong>
-                    </li>
-                  ))
-                )}
-              </ul>
-            </div>
-
-            <div className="panel-card">
-              <div className="panel-card__header">
-                <h2>Productos más pedidos</h2>
-                <span>{metrics.topProducts.length} productos</span>
-              </div>
-              <ul className="metric-list compact-list">
-                {metrics.topProducts.length === 0 ? (
-                  <li className="empty-row">No hay productos con pedidos.</li>
-                ) : (
-                  metrics.topProducts.map((item, index) => (
-                    <li key={item.name} className="metric-row metric-row--compact">
-                      <div className="metric-rank">0{index + 1}</div>
-                      <div className="metric-name-block">
-                        <strong>{item.name}</strong>
-                      </div>
-                      <div className="metric-bar-wrap">
-                        <div
-                          className="metric-bar metric-bar--products"
-                          style={{ width: `${(item.count / metrics.maxProductCount) * 100}%` }}
-                        />
-                      </div>
-                      <strong className="metric-number">{item.count}</strong>
-                    </li>
-                  ))
-                )}
-              </ul>
-            </div>
-
-            <div className="panel-card">
-              <div className="panel-card__header">
-                <h2>Usuarios con más favoritos</h2>
-                <span>{metrics.mostSavedUsers.length} clientes</span>
-              </div>
-              <ul className="metric-list compact-list">
-                {metrics.mostSavedUsers.length === 0 ? (
-                  <li className="empty-row">No hay favoritos guardados.</li>
-                ) : (
-                  metrics.mostSavedUsers.map((item, index) => (
-                    <li key={item.uid} className="metric-row metric-row--compact">
-                      <div className="metric-rank">0{index + 1}</div>
-                      <div className="metric-name-block">
-                        <strong>{item.name || "Cliente"}</strong>
-                      </div>
-                      <div className="metric-bar-wrap">
-                        <div
-                          className="metric-bar metric-bar--favorites"
-                          style={{ width: `${(item.count / metrics.maxFavoriteCount) * 100}%` }}
-                        />
-                      </div>
-                      <strong className="metric-number">{item.count}</strong>
-                    </li>
-                  ))
-                )}
-              </ul>
-            </div>
+            {activeFilter === "overview" && (
+              <>
+                {renderCustomerPanel()}
+                {renderProductsPanel()}
+                {renderFavoritesPanel()}
+              </>
+            )}
+            {activeFilter === "customers" && renderCustomerPanel()}
+            {activeFilter === "products" && renderProductsPanel()}
+            {activeFilter === "favorites" && renderFavoritesPanel()}
           </section>
         ) : (
           <section className="admin-grid user-account-grid">
-            <div className="panel-card panel-card--wide">
-              <div className="panel-card__header">
-                <h2>Mis favoritos</h2>
-                <span>{metrics.totalFavorites} productos</span>
-              </div>
-              <ul className="metric-list">
-                {visibleFavorites.length === 0 ? (
-                  <li className="empty-row">Todavía no tienes productos favoritos.</li>
-                ) : (
-                  visibleFavorites.map((favorite, index) => (
-                    <li key={favorite.id || `${favorite.userId}-${index}`} className="metric-row">
-                      <div className="metric-rank">0{index + 1}</div>
-                      <div className="metric-profile">
-                        <span className="mini-avatar mini-avatar--favorite">♥</span>
-                        <div>
-                          <strong>{favorite.productName || favorite.name || "Producto favorito"}</strong>
-                          <small>{favorite.category || "Categoría"}</small>
-                        </div>
-                      </div>
-                      <div className="metric-bar-wrap">
-                        <div className="metric-bar metric-bar--favorites" style={{ width: "100%" }} />
-                      </div>
-                      <strong className="metric-number">Fav</strong>
-                    </li>
-                  ))
-                )}
-              </ul>
-            </div>
-
-            <div className="panel-card panel-card--wide">
-              <div className="panel-card__header">
-                <h2>Mis pedidos</h2>
-                <span>{metrics.totalOrders} pedidos</span>
-              </div>
-              <ul className="metric-list">
-                {visibleOrders.length === 0 ? (
-                  <li className="empty-row">Aún no has realizado pedidos.</li>
-                ) : (
-                  visibleOrders.map((order, index) => (
-                    <li key={order.id || `${order.userId}-${index}`} className="metric-row">
-                      <div className="metric-rank">0{index + 1}</div>
-                      <div className="metric-profile">
-                        <span className="mini-avatar mini-avatar--orders">✓</span>
-                        <div>
-                          <strong>{order.productName || order.productId || "Pedido"}</strong>
-                          <small>{order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "Sin fecha"}</small>
-                        </div>
-                      </div>
-                      <div className="metric-bar-wrap">
-                        <div
-                          className="metric-bar metric-bar--orders-user"
-                          style={{ width: `${Math.min(100, 35 + index * 12)}%` }}
-                        />
-                      </div>
-                      <strong className="metric-number">{order.amount || "Bs."}</strong>
-                    </li>
-                  ))
-                )}
-              </ul>
-            </div>
+            {activeFilter === "overview" && (
+              <>
+                {renderUserFavorites()}
+                {renderUserOrders()}
+              </>
+            )}
+            {activeFilter === "favorites" && renderUserFavorites()}
+            {activeFilter === "orders" && renderUserOrders()}
           </section>
         )}
       </div>

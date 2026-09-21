@@ -1,6 +1,6 @@
 import "../App.css";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { products } from "../data/products";
 
 const featuredProduct = products.find((product) => product.featured) ?? products[0];
@@ -15,6 +15,11 @@ const productGroups = products.reduce((groups, product) => {
 
 function Home({ user, onLogin = () => {}, onLogout = () => {}, isAdmin = false }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
 
   const closeMenu = () => setMenuOpen(false);
 
