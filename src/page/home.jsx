@@ -12,7 +12,7 @@ const productGroups = products.reduce((groups, product) => {
   return groups;
 }, {});
 
-function Home() {
+function Home({ user, onLogin = () => {}, onLogout = () => {}, isAdmin = false }) {
   return (
     <div className="app">
       <header className="navbar">
@@ -21,9 +21,28 @@ function Home() {
           <span>TAMTECH</span>
         </div>
 
-        <nav>
+        <nav className="main-nav">
           <a href="/">Inicio</a>
           <a href="#catalogo">Productos</a>
+          {!user ? (
+            <button type="button" className="nav-login-button" onClick={onLogin}>
+              Iniciar sesión
+            </button>
+          ) : (
+            <>
+              {isAdmin && (
+                <Link to="/admin" className="nav-admin-link">
+                  Admin
+                </Link>
+              )}
+              {!isAdmin && (
+                <Link to="/mi-cuenta" className="nav-admin-link">
+                  Mi cuenta
+                </Link>
+              )}
+              <span className="welcome-text">{user.name}</span>
+            </>
+          )}
         </nav>
       </header>
 
