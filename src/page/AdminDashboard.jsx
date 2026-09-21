@@ -111,6 +111,21 @@ function AdminDashboard({ user, isAdmin = false, currentUserId = null }) {
       .slice(0, 5)
       .map(([name, count]) => ({ name, count }));
 
+    const favoriteProductCount = visibleFavorites.reduce((acc, favorite) => {
+      const key = favorite.productId || favorite.productName || "Producto sin nombre";
+      const name = favorite.productName || "Producto sin nombre";
+      acc[key] = {
+        name,
+        count: (acc[key]?.count || 0) + 1,
+      };
+      return acc;
+    }, {});
+
+    const topFavoriteProducts = Object.entries(favoriteProductCount)
+      .sort(([, a], [, b]) => b.count - a.count)
+      .slice(0, 5)
+      .map(([id, item]) => ({ id, name: item.name, count: item.count }));
+
     const favoriteCount = users.map((item) => ({
       uid: item.uid,
       name: item.name,
@@ -126,6 +141,7 @@ function AdminDashboard({ user, isAdmin = false, currentUserId = null }) {
     const maxCustomerCount = Math.max(1, ...topCustomers.map((item) => item.count));
     const maxProductCount = Math.max(1, ...topProducts.map((item) => item.count));
     const maxFavoriteCount = Math.max(1, ...mostSavedUsers.map((item) => item.count));
+    const maxSavedProductCount = Math.max(1, ...topFavoriteProducts.map((item) => item.count));
 
     return {
       totalUsers,
@@ -133,11 +149,13 @@ function AdminDashboard({ user, isAdmin = false, currentUserId = null }) {
       totalFavorites,
       topCustomers,
       topProducts,
+      topFavoriteProducts,
       mostSavedUsers,
       lastOrders: [],
       maxCustomerCount,
       maxProductCount,
       maxFavoriteCount,
+      maxSavedProductCount,
     };
   }, [users, visibleOrders, visibleFavorites, isAdmin]);
 
@@ -170,6 +188,13 @@ function AdminDashboard({ user, isAdmin = false, currentUserId = null }) {
           meta: metrics.mostSavedUsers[0]
             ? `${metrics.mostSavedUsers[0].count} favoritos`
             : "Sin favoritos",
+        },
+        {
+          label: "Producto favorito",
+          value: metrics.topFavoriteProducts[0]?.name || "Sin datos",
+          meta: metrics.topFavoriteProducts[0]
+            ? `${metrics.topFavoriteProducts[0].count} usuarios`
+            : "Sin productos guardados",
         },
       ]
     : [];
@@ -258,6 +283,36 @@ function AdminDashboard({ user, isAdmin = false, currentUserId = null }) {
                 <div
                   className="metric-bar metric-bar--favorites"
                   style={{ width: `${(item.count / metrics.maxFavoriteCount) * 100}%` }}
+                />
+              </div>
+              <strong className="metric-number">{item.count}</strong>
+            </li>
+          ))
+        )}
+      </ul>
+    </div>
+  );
+
+  const renderFavoriteProductsPanel = () => (
+    <div className="panel-card">
+      <div className="panel-card__header">
+        <h2>Productos más guardados</h2>
+        <span>{metrics.topFavoriteProducts.length} productos</span>
+      </div>
+      <ul className="metric-list compact-list">
+        {metrics.topFavoriteProducts.length === 0 ? (
+          <li className="empty-row">No hay productos guardados por usuarios.</li>
+        ) : (
+          metrics.topFavoriteProducts.map((item, index) => (
+            <li key={item.id} className="metric-row metric-row--compact">
+              <div className="metric-rank">0{index + 1}</div>
+              <div className="metric-name-block">
+                <strong>{item.name}</strong>
+              </div>
+              <div className="metric-bar-wrap">
+                <div
+                  className="metric-bar metric-bar--favorites"
+                  style={{ width: `${(item.count / metrics.maxSavedProductCount) * 100}%` }}
                 />
               </div>
               <strong className="metric-number">{item.count}</strong>
@@ -404,6 +459,7 @@ function AdminDashboard({ user, isAdmin = false, currentUserId = null }) {
             {renderCustomerPanel()}
             {renderProductsPanel()}
             {renderFavoritesPanel()}
+            {renderFavoriteProductsPanel()}
           </section>
         ) : (
           <section className="admin-grid user-account-grid">
