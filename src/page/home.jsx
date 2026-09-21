@@ -33,7 +33,7 @@ function Home({ user, onLogin = () => {}, onLogout = () => {}, isAdmin = false }
 
         <button
           type="button"
-          className="mobile-menu-toggle"
+          className={`mobile-menu-toggle ${menuOpen ? "open" : ""}`}
           aria-expanded={menuOpen}
           aria-controls="main-nav"
           aria-label="Abrir menú de navegación"
@@ -44,29 +44,31 @@ function Home({ user, onLogin = () => {}, onLogout = () => {}, isAdmin = false }
           <span />
         </button>
 
-        <nav id="main-nav" className={`main-nav ${menuOpen ? "open" : ""}`}>
-          <a href="/" onClick={closeMenu}>Inicio</a>
-          <a href="#catalogo" onClick={closeMenu}>Productos</a>
-          {!user ? (
-            <button type="button" className="nav-login-button" onClick={() => { onLogin(); closeMenu(); }}>
-              Iniciar sesión
-            </button>
-          ) : (
-            <>
-              {isAdmin && (
-                <Link to="/admin" className="nav-admin-link" onClick={closeMenu}>
-                  Admin
-                </Link>
-              )}
-              {!isAdmin && (
-                <Link to="/mi-cuenta" className="nav-admin-link" onClick={closeMenu}>
-                  Mi cuenta
-                </Link>
-              )}
-              <span className="welcome-text">{user.name}</span>
-            </>
-          )}
-        </nav>
+        <div className={`mobile-menu-panel ${menuOpen ? "open" : ""}`}>
+          <nav id="main-nav" className="main-nav mobile-nav">
+            <a href="/" onClick={closeMenu}>Inicio</a>
+            <a href="#catalogo" onClick={closeMenu}>Productos</a>
+            {!user ? (
+              <button type="button" className="nav-login-button" onClick={() => { onLogin(); closeMenu(); }}>
+                Iniciar sesión
+              </button>
+            ) : (
+              <>
+                {isAdmin && (
+                  <Link to="/admin" className="nav-admin-link" onClick={closeMenu}>
+                    Admin
+                  </Link>
+                )}
+                {!isAdmin && (
+                  <Link to="/mi-cuenta" className="nav-admin-link" onClick={closeMenu}>
+                    Mi cuenta
+                  </Link>
+                )}
+                <span className="welcome-text">{user.name}</span>
+              </>
+            )}
+          </nav>
+        </div>
       </header>
 
       <main>
