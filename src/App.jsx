@@ -67,17 +67,15 @@ function App() {
 
         if (!firebaseUser) {
           setUserProfile(null);
+          setAuthReady(true);
           return;
         }
 
+        setAuthReady(true);
         await syncUserProfile(firebaseUser);
       } catch (error) {
         console.error("Error al sincronizar perfil del usuario:", error);
         setUserProfile(null);
-      } finally {
-        if (mounted) {
-          setAuthReady(true);
-        }
       }
     });
 
